@@ -6,3 +6,4 @@
 --nepochs_d=10
 --nepochs_g=1
 --save_model
+--nogo
