@@ -46,12 +46,10 @@ from tensorflow import keras
 
 # Provided
 from job_control import *
-from pfam_loader import *
-from hw6_parser import *
+from chesapeake_loader import *
+from hw7_parser import *
 
 # You need to provide this yourself
-from gru_classifier import *
-from mha_classifier import *
 
 
 def exp_type_to_hyperparameters(args):
@@ -63,10 +61,7 @@ def exp_type_to_hyperparameters(args):
     :param args: ArgumentParser
     :return: Hyperparameter set (in dictionary form)
     '''
-    if args.exp_type == 'gru' or args.exp_type == 'mha':
-        p = {'rotation': range(0, 5)}
-    else:
-        assert False, "Unrecognized exp_type (%s)" % args.exp_type
+    p = {'fold': range(0, 5)}
 
     return p
 
@@ -159,76 +154,8 @@ def generate_fname(args, params_str):
     else:
         md_str = 'md_%0.6f_' % args.min_delta
 
-    if args.exp_type == 'gru':
-        grus_str = '_'.join(str(x) for x in args.gru_layers)
-        dense_layers_str = '_'.join(str(x) for x in args.dense_layers)
-        return (f'{args.results_path}/{args.exp_type}_grus_{grus_str}_gact_{args.gru_activation}_dense_'
-                f'{dense_layers_str}_dact_{args.dense_activation}_{do_str}{l1_str}{l2_str}{gc_str}{md_str}lrate_'
-                f'{args.lrate:0.6f}_rot_{args.rotation}')
-    elif args.exp_type == 'mha':
-        num_heads_str = '_'.join(str(x) for x in args.num_heads)
-        key_dim_str = '_'.join(str(x) for x in args.key_dim)
-        dense_layers_str = '_'.join(str(x) for x in args.dense_layers)
-        return (f'{args.results_path}/{args.exp_type}_nheads_{num_heads_str}_kdims_{key_dim_str}'
-                f'_dense_{dense_layers_str}_dact_{args.dense_activation}_{do_str}{l1_str}{l2_str}{gc_str}{md_str}'
-                f'lrate_{args.lrate:0.6f}_rot_{args.rotation}')
-    else:
-        assert False
-
-
-def create_classifier_network(args, n_classes, n_tokens):
-    '''
-    Creates desired network from arguments and given output classes and input tokens
-    :param args: ArgParser arguments from command line
-    :param n_classes: Number of output classes
-    :param n_tokens: Number of distinct tokens
-    '''
-    # Create GRU
-    if args.exp_type == 'gru':
-        return create_simple_gru(args.sequence_length,
-                                 n_classes,
-                                 n_tokens,
-                                 args.n_embedding,
-                                 args.pp_filters,
-                                 args.pp_kernel_size,
-                                 args.pp_strides,
-                                 args.pp_padding,
-                                 args.pp_activation,
-                                 args.gru_layers,
-                                 args.dense_layers,
-                                 activation_gru=args.gru_activation,
-                                 activation_dense=args.dense_activation,
-                                 unroll=args.unroll,
-                                 bidirectional=args.bidirectional,
-                                 pool_size=args.pool,
-                                 padding=args.padding,
-                                 lambda_regularization=args.L2_regularization,
-                                 grad_clip=args.grad_clip,
-                                 lrate=args.lrate,
-                                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                                 metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
-    # Create MHA
-    elif args.exp_type == 'mha':
-        return create_simple_mha(args.sequence_length,
-                                 n_classes,
-                                 n_tokens,
-                                 args.n_embedding,
-                                 args.pp_filters,
-                                 args.pp_kernel_size,
-                                 args.pp_strides,
-                                 args.pp_padding,
-                                 args.pp_activation,
-                                 args.num_heads,
-                                 args.key_dim,
-                                 args.dense_layers,
-                                 activation_dense=args.dense_activation,
-                                 lambda_regularization=args.L2_regularization,
-                                 grad_clip=args.grad_clip,
-                                 lrate=args.lrate,
-                                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                                 metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
-    else:
-        assert False, f'unrecognized experiment type {args.exp_type}'
+    dense_layers_str = '_'.join(str(x) for x in args.dense_layers)
+    return f'{args.results_path}/{args.exp_type}'
 
 
 def execute_exp(args=None, multi_gpus=False):
@@ -264,18 +191,18 @@ def execute_exp(args=None, multi_gpus=False):
         print('Starting data flow')
 
     # Load individual files (all objects)
-    data_set_dict = load_rotation(basedir=args.dataset,
-                                  rotation=args.rotation,
-                                  version='B')
-    n_tokens = data_set_dict['n_tokens']
-    n_classes = data_set_dict['n_classes']
-
-    ds_train, ds_validation, ds_testing = create_tf_datasets(dat=data_set_dict,
-                                                             batch=args.batch,
-                                                             prefetch=args.prefetch,
-                                                             shuffle=args.shuffle,
-                                                             repeat=args.repeat,
-                                                             cache=args.cache)
+    n_noise_steps = 3
+    n_conv_per_step = 2
+    ds_train, ds_valid, ds_test, num_classes = create_datasets(base_dir=args.dataset,
+                                                               full_sat=False,
+                                                               patch_size=args.image_size,
+                                                               fold=args.fold,
+                                                               cache_dir=args.cache,
+                                                               repeat_train=args.repeat,
+                                                               shuffle_train=args.shuffle,
+                                                               batch_size=args.batch_size,
+                                                               prefetch=args.prefetch,
+                                                               num_parallel_calls=args.num_parallel_calls)
 
     # Build the model
     if args.verbose >= 3:
@@ -288,15 +215,15 @@ def execute_exp(args=None, multi_gpus=False):
 
         with mirrored_strategy.scope():
             # Build network: you must provide your own implementation
-            model = create_classifier_network(args, n_classes, n_tokens)
+            model = None
     else:
         # Single GPU
         # Build network: you must provide your own implementation
-        model = create_classifier_network(args, n_classes, n_tokens)
+        model = None
 
     # Report model structure if verbosity is turned on
-    if args.verbose >= 1:
-        print(model.summary())
+    # if args.verbose >= 1:
+    #     print(model.summary())
 
     print(args)
 
@@ -353,7 +280,7 @@ def execute_exp(args=None, multi_gpus=False):
                         steps_per_epoch=args.steps_per_epoch,
                         use_multiprocessing=True,
                         verbose=args.verbose >= 2,
-                        validation_data=ds_validation,
+                        validation_data=ds_valid,
                         validation_steps=None,
                         callbacks=cbs)
 
@@ -363,10 +290,10 @@ def execute_exp(args=None, multi_gpus=False):
     results = {}
 
     # Test set
-    if ds_testing is not None:
+    if ds_test is not None:
         print('#################')
         print('Testing')
-        results['predict_testing_eval'] = model.evaluate(ds_testing)
+        results['predict_testing_eval'] = model.evaluate(ds_test)
         wandb.log({'final_test_loss': results['predict_testing_eval'][0]})
         wandb.log({'final_test_sparse_categorical_accuracy': results['predict_testing_eval'][1]})
 

@@ -4,18 +4,18 @@
 #SBATCH --partition=disc_dual_a100_students,gpu,gpu_a100
 #SBATCH --cpus-per-task=64
 #SBATCH --mem=80G
-#SBATCH --output=outputs/hw6_%j_stdout.txt
-#SBATCH --error=outputs/hw6_%j_stderr.txt
+#SBATCH --output=outputs/hw7_%j_stdout.txt
+#SBATCH --error=outputs/hw7_%j_stderr.txt
 #SBATCH --time=06:00:00
-#SBATCH --job-name=hw6
+#SBATCH --job-name=hw7
 #SBATCH --mail-user=brandondmichaud@ou.edu
 #SBATCH --mail-type=ALL
-#SBATCH --chdir=/home/cs504319/cs5043-hw6
+#SBATCH --chdir=/home/cs504319/cs5043-hw7
 #SBATCH --array=0
 
 . /home/fagg/tf_setup.sh
-conda activate tf
+conda activate dnn_2024_02
 module load cuDNN/8.9.2.26-CUDA-12.2.0
 
 
-python hw6_base.py -vv @exp.txt @oscer.txt @gru.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK --dataset /home/fagg/datasets/pfam
+python hw6_base.py -vv @exp.txt @oscer.txt @gan.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK

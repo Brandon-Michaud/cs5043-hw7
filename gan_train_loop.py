@@ -12,16 +12,17 @@ import numpy as np
 from matplotlib import colors
 import matplotlib.pyplot as plt
 
-def train_loop(g_model:keras.Model, 
-               d_model:keras.Model, 
-               gtrain_model:keras.Model, 
-               ds_train:tf.data.Dataset, 
-               n_noise_steps:int,
-              image_size:int,
-               nepochs_meta:int=10,
-              nepochs_d:int=10,
-              nepochs_g:int=1,
-              verbose:bool=True):
+
+def train_loop(g_model: keras.Model,
+               d_model: keras.Model,
+               gtrain_model: keras.Model,
+               ds_train: tf.data.Dataset,
+               n_noise_steps: int,
+               image_size: int,
+               nepochs_meta: int = 10,
+               nepochs_d: int = 10,
+               nepochs_g: int = 1,
+               verbose: bool = True):
     '''
     Generator / Discriminator co-training
     
@@ -43,19 +44,19 @@ def train_loop(g_model:keras.Model,
     :return: Last set of fake labels, the corresponding generated images, and the 
                          true images that correspond to the labels
     '''
-    
+
     for I, L in ds_train.batch(3).take(nepochs_meta):
         # Real image/label pairs
-        I_real = np.squeeze(I[0,:,:,:,:])
-        L_real = np.squeeze(L[0,:,:,:,:])
+        I_real = np.squeeze(I[0, :, :, :, :])
+        L_real = np.squeeze(L[0, :, :, :, :])
 
         # Labels for generated images
-        I_fake_no_use = np.squeeze(I[1,:,:,:,:])
-        L_fake = np.squeeze(L[1,:,:,:,:])
+        I_fake_no_use = np.squeeze(I[1, :, :, :, :])
+        L_fake = np.squeeze(L[1, :, :, :, :])
 
         # Real images and labels, but decorrelated
-        I_fake2 = np.squeeze(I[2,:,:,:,:])
-        L_fake2 = np.array((np.squeeze(L[2,:,:,:,:])))
+        I_fake2 = np.squeeze(I[2, :, :, :, :])
+        L_fake2 = np.array((np.squeeze(L[2, :, :, :, :])))
         # Decorrelate the I/L pairs
         np.random.shuffle(L_fake2)
 
@@ -63,13 +64,13 @@ def train_loop(g_model:keras.Model,
         nexamples = I_real.shape[0]
 
         # Produce the inputs to the generator: Labels + noise tensors (smallest to largest)
-        inputs =[L_fake]
-        for i in range(n_noise_steps-1,-1,-1):
-            Z = np.random.normal(size=(nexamples, image_size//(2**i), image_size//(2**i), 1))
+        inputs = [L_fake]
+        for i in range(n_noise_steps - 1, -1, -1):
+            Z = np.random.normal(size=(nexamples, image_size // (2 ** i), image_size // (2 ** i), 1))
             inputs.append(Z)
 
         # Generate images given the generator inputs
-        I_fake = g_model.predict(x=inputs) 
+        I_fake = g_model.predict(x=inputs)
 
         # Append the real set + two fake sets together
         I_all = np.concatenate([I_real, I_fake, I_fake2], axis=0)
@@ -77,25 +78,26 @@ def train_loop(g_model:keras.Model,
 
         # Create the labels for the descriminator.  Label '1' for real pairs
         #   and '0' for the others
-        desired = np.concatenate([np.ones((nexamples,1)), np.zeros((nexamples*2,1))])
+        desired = np.concatenate([np.ones((nexamples, 1)), np.zeros((nexamples * 2, 1))])
 
         # Train the discriminator: use the 3 sets
         print('DISCRIMINATOR')
-        d_model.fit(x=[I_all, L_all], y = desired, epochs=nepochs_d, verbose=verbose)
+        d_model.fit(x=[I_all, L_all], y=desired, epochs=nepochs_d, verbose=verbose)
 
         # Train the generator: only use the fake set with the generated images.
         #  Desired output is '1' for every image (we want to fool the descriminator)
         print('GENERATOR')
-        gtrain_model.fit(x=inputs, y=np.ones((nexamples,1)), epochs=nepochs_g, verbose=verbose)
+        gtrain_model.fit(x=inputs, y=np.ones((nexamples, 1)), epochs=nepochs_g, verbose=verbose)
     print('DONE')
-    
+
     # Return the last version of labels + generated images
     return L_fake, I_fake, I_fake_no_use
-    
-def render_examples(L_fake:np.array, 
-                    I_fake:np.array, 
-                    I_fake_no_use:np.array,
-                   n:int=40):
+
+
+def render_examples(L_fake: np.array,
+                    I_fake: np.array,
+                    I_fake_no_use: np.array,
+                    n: int = 40):
     '''
     Show generated images: one example per row
     
@@ -107,28 +109,28 @@ def render_examples(L_fake:np.array,
     :return: Resulting figure handle
     
     '''
-    cmap = colors.ListedColormap(['k','b','y','g','r'])
+    cmap = colors.ListedColormap(['k', 'b', 'y', 'g', 'r'])
 
-    fig, axs=plt.subplots(n,3, figsize=(16,300))
+    fig, axs = plt.subplots(n, 3, figsize=(16, 300))
     Lc_fake = np.argmax(L_fake, axis=-1)
     for i in range(n):
         if i == 0:
-            axs[i,0].set_title('Labels')
-            axs[i,1].set_title('Generated Image')
-            axs[i,2].set_title('True Image')
+            axs[i, 0].set_title('Labels')
+            axs[i, 1].set_title('Generated Image')
+            axs[i, 2].set_title('True Image')
         # Labels
-        axs[i,0].imshow(Lc_fake[i,:,:], vmin=0, vmax=6)
-        axs[i,0].set_xticks([])
-        axs[i,0].set_yticks([])
-        
+        axs[i, 0].imshow(Lc_fake[i, :, :], vmin=0, vmax=6)
+        axs[i, 0].set_xticks([])
+        axs[i, 0].set_yticks([])
+
         # Fake image
-        axs[i,1].imshow(I_fake[i,:,:,:])
-        axs[i,1].set_xticks([])
-        axs[i,1].set_yticks([])
-        
+        axs[i, 1].imshow(I_fake[i, :, :, :])
+        axs[i, 1].set_xticks([])
+        axs[i, 1].set_yticks([])
+
         # Real image (but never used)
-        axs[i,2].imshow(I_fake_no_use[i,:,:,:])
-        axs[i,2].set_xticks([])
-        axs[i,2].set_yticks([])
-        
+        axs[i, 2].imshow(I_fake_no_use[i, :, :, :])
+        axs[i, 2].set_xticks([])
+        axs[i, 2].set_yticks([])
+
     return fig

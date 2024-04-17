@@ -1,0 +1,7 @@
+--gpu
+--batch_size=64
+--repeat
+--prefetch=2
+--num_parallel_calls=4
+--cache=
+--shuffle=200

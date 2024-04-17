@@ -1,0 +1,8 @@
+--project=hw7
+--dataset=/home/fagg/datasets/radiant_earth/pa
+--image_size=64
+--lrate=0.0001
+--nepochs_meta=50
+--nepochs_d=10
+--nepochs_g=1
+--save_model
