@@ -18,4 +18,4 @@ conda activate dnn_2024_02
 module load cuDNN/8.9.2.26-CUDA-12.2.0
 
 
-python hw6_base.py -vv @exp.txt @oscer.txt @gan.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK
+python hw7_base.py -vv @exp.txt @oscer.txt @gan.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK
