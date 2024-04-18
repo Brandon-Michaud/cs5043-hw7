@@ -154,7 +154,7 @@ def generate_fname(args, params_str):
     else:
         md_str = 'md_%0.6f_' % args.min_delta
 
-    dense_layers_str = '_'.join(str(x) for x in args.dense_layers)
+    # dense_layers_str = '_'.join(str(x) for x in args.dense_layers)
     return f'{args.results_path}/{args.exp_type}'
 
 
