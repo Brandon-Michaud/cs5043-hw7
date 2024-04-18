@@ -200,7 +200,7 @@ def execute_exp(args=None, multi_gpus=False):
                                                                cache_dir=args.cache,
                                                                repeat_train=args.repeat,
                                                                shuffle_train=args.shuffle,
-                                                               batch_size=args.batch_size,
+                                                               batch_size=args.batch,
                                                                prefetch=args.prefetch,
                                                                num_parallel_calls=args.num_parallel_calls)
 

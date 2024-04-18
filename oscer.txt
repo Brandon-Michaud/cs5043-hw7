@@ -1,5 +1,5 @@
 --gpu
---batch_size=64
+--batch=64
 --repeat
 --prefetch=2
 --num_parallel_calls=4
