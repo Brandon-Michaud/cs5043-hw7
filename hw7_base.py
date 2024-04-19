@@ -202,7 +202,7 @@ def execute_exp(args=None, multi_gpus=False):
                                     g_batch_normalization=args.g_batch_normalization,
                                     m_lrate=args.m_lrate,
                                     m_loss=tf.keras.losses.BinaryCrossentropy(),
-                                    m_metrics=[tf.keras.losses.BinaryCrossentropy()])
+                                    m_metrics=[tf.keras.metrics.BinaryAccuracy()])
     else:
         # Single GPU
         # Build network: you must provide your own implementation
@@ -232,7 +232,7 @@ def execute_exp(args=None, multi_gpus=False):
                                 g_batch_normalization=args.g_batch_normalization,
                                 m_lrate=args.m_lrate,
                                 m_loss=tf.keras.losses.BinaryCrossentropy(),
-                                m_metrics=[tf.keras.losses.BinaryCrossentropy()])
+                                m_metrics=[tf.keras.metrics.BinaryAccuracy()])
 
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:
