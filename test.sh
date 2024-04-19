@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-#SBATCH --partition=debug_5min,debug
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=1G
+#SBATCH --partition=debug
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=16G
 #SBATCH --output=outputs/hw7_%j_stdout.txt
 #SBATCH --error=outputs/hw7_%j_stderr.txt
-#SBATCH --time=00:05:00
+#SBATCH --time=00:30:00
 #SBATCH --job-name=hw7
 #SBATCH --mail-user=brandondmichaud@ou.edu
 #SBATCH --mail-type=ALL
