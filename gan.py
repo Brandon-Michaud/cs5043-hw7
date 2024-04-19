@@ -6,6 +6,7 @@ from network_support import *
 
 def create_discriminator(image_size,
                          n_channels,
+                         n_classes,
                          filters,
                          hidden,
                          n_conv_per_step=3,
@@ -20,7 +21,7 @@ def create_discriminator(image_size,
     input1 = Input(shape=(image_size[0], image_size[1], n_channels,), name='RGB Image')
 
     # Input for semantic labels of pixels
-    input2 = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
+    input2 = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
 
     # Concatenate inputs
     tensor = Concatenate()([input1, input2])
@@ -57,6 +58,7 @@ def create_discriminator(image_size,
 
 def create_generator(image_size,
                      n_channels,
+                     n_classes,
                      n_noise_steps,
                      filters,
                      n_conv_per_step=3,
@@ -66,7 +68,7 @@ def create_generator(image_size,
                      sdropout=None,
                      batch_normalization=False):
     # Input image with semantic pixel labels
-    tensor = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
+    tensor = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
     inputs = [tensor]
 
     # Input noises at each level in Unet
@@ -149,6 +151,7 @@ def create_generator(image_size,
 
 def create_gan(image_size,
                n_channels,
+               n_classes,
                d_filters,
                d_hidden,
                g_n_noise_steps,
@@ -176,6 +179,7 @@ def create_gan(image_size,
     # Create discriminator based on inputs
     d = create_discriminator(image_size=image_size,
                              n_channels=n_channels,
+                             n_classes=n_classes,
                              filters=d_filters,
                              hidden=d_hidden,
                              n_conv_per_step=d_n_conv_per_step,
@@ -194,6 +198,7 @@ def create_gan(image_size,
     # Create generator based on inputs
     g = create_generator(image_size=image_size,
                          n_channels=n_channels,
+                         n_classes=n_classes,
                          n_noise_steps=g_n_noise_steps,
                          filters=g_filters,
                          n_conv_per_step=g_n_conv_per_step,

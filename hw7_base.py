@@ -178,6 +178,7 @@ def execute_exp(args=None, multi_gpus=False):
             # Build network: you must provide your own implementation
             d, g, meta = create_gan(image_size=(args.image_size, args.image_size),
                                     n_channels=3,
+                                    n_classes=num_classes,
                                     d_filters=args.d_filters,
                                     d_hidden=args.d_hidden,
                                     g_n_noise_steps=args.g_n_noise_steps,
@@ -207,6 +208,7 @@ def execute_exp(args=None, multi_gpus=False):
         # Build network: you must provide your own implementation
         d, g, meta = create_gan(image_size=(args.image_size, args.image_size),
                                 n_channels=3,
+                                n_classes=num_classes,
                                 d_filters=args.d_filters,
                                 d_hidden=args.d_hidden,
                                 g_n_noise_steps=args.g_n_noise_steps,
