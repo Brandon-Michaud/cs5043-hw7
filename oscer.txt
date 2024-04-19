@@ -4,3 +4,4 @@
 --num_parallel_calls=4
 --cache=
 --shuffle=200
+--gpu
