@@ -212,7 +212,7 @@ def create_gan(image_size,
     d.trainable = False
 
     # Create inputs for the meta model
-    labels = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
+    labels = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
     inputs = [labels]
 
     # Input noises at each level in Unet
