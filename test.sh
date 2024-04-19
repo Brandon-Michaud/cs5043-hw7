@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --partition=debug
-#SBATCH --cpus-per-task=64
+#SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
 #SBATCH --output=outputs/hw7_%j_stdout.txt
 #SBATCH --error=outputs/hw7_%j_stderr.txt
