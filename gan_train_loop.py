@@ -44,7 +44,7 @@ def train_loop(g_model: keras.Model,
     :return: Last set of fake labels, the corresponding generated images, and the 
                          true images that correspond to the labels
     '''
-
+    idx = 0
     for I, L in ds_train.batch(3).take(nepochs_meta):
         # Real image/label pairs
         I_real = np.squeeze(I[0, :, :, :, :])
@@ -81,13 +81,15 @@ def train_loop(g_model: keras.Model,
         desired = np.concatenate([np.ones((nexamples, 1)), np.zeros((nexamples * 2, 1))])
 
         # Train the discriminator: use the 3 sets
-        print('DISCRIMINATOR')
+        print(f'DISCRIMINATOR {idx}')
         d_model.fit(x=[I_all, L_all], y=desired, epochs=nepochs_d, verbose=verbose)
 
         # Train the generator: only use the fake set with the generated images.
         #  Desired output is '1' for every image (we want to fool the descriminator)
-        print('GENERATOR')
+        print(f'GENERATOR {idx}')
         gtrain_model.fit(x=inputs, y=np.ones((nexamples, 1)), epochs=nepochs_g, verbose=verbose)
+
+        idx += 1
     print('DONE')
 
     # Return the last version of labels + generated images
