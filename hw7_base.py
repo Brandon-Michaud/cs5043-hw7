@@ -174,35 +174,70 @@ def execute_exp(args=None, multi_gpus=False):
 
         with mirrored_strategy.scope():
             # Build network: you must provide your own implementation
-            model = create_generator(image_size=(args.image_size, args.image_size),
-                                     n_channels=3,
-                                     n_classes=num_classes,
-                                     n_noise_steps=args.g_n_noise_steps,
-                                     filters=args.g_filters,
-                                     n_conv_per_step=args.g_n_conv_per_step,
-                                     conv_activation=args.g_conv_activation,
-                                     kernel_size=args.g_kernel_size,
-                                     padding=args.g_padding,
-                                     sdropout=args.g_sdropout,
-                                     batch_normalization=args.g_batch_normalization)
+            d, g, meta = create_gan(image_size=(args.image_size, args.image_size),
+                                    n_channels=3,
+                                    d_filters=args.d_filters,
+                                    d_hidden=args.d_hidden,
+                                    g_n_noise_steps=args.g_n_noise_steps,
+                                    g_filters=args.g_filters,
+                                    d_n_conv_per_step=args.d_n_conv_per_step,
+                                    d_conv_activation=args.d_conv_activation,
+                                    d_kernel_size=args.d_kernel_size,
+                                    d_padding=args.d_padding,
+                                    d_sdropout=args.d_sdropout,
+                                    d_dense_activation=args.d_dense_activation,
+                                    d_dropout=args.d_dropout,
+                                    d_batch_normalization=args.d_batch_normalization,
+                                    d_lrate=args.d_lrate,
+                                    d_loss=tf.keras.losses.BinaryCrossentropy(),
+                                    d_metrics=[tf.keras.losses.BinaryCrossentropy()],
+                                    g_n_conv_per_step=args.g_n_conv_per_step,
+                                    g_conv_activation=args.g_conv_activation,
+                                    g_kernel_size=args.g_kernel_size,
+                                    g_padding=args.g_padding,
+                                    g_sdropout=args.g_sdropout,
+                                    g_batch_normalization=args.g_batch_normalization,
+                                    m_lrate=args.m_lrate,
+                                    m_loss=tf.keras.losses.BinaryCrossentropy(),
+                                    m_metrics=[tf.keras.losses.BinaryCrossentropy()])
     else:
         # Single GPU
         # Build network: you must provide your own implementation
-        model = create_generator(image_size=(args.image_size, args.image_size),
-                                 n_channels=3,
-                                 n_classes=num_classes,
-                                 n_noise_steps=args.g_n_noise_steps,
-                                 filters=args.g_filters,
-                                 n_conv_per_step=args.g_n_conv_per_step,
-                                 conv_activation=args.g_conv_activation,
-                                 kernel_size=args.g_kernel_size,
-                                 padding=args.g_padding,
-                                 sdropout=args.g_sdropout,
-                                 batch_normalization=args.g_batch_normalization)
+        d, g, meta = create_gan(image_size=(args.image_size, args.image_size),
+                                n_channels=3,
+                                d_filters=args.d_filters,
+                                d_hidden=args.d_hidden,
+                                g_n_noise_steps=args.g_n_noise_steps,
+                                g_filters=args.g_filters,
+                                d_n_conv_per_step=args.d_n_conv_per_step,
+                                d_conv_activation=args.d_conv_activation,
+                                d_kernel_size=args.d_kernel_size,
+                                d_padding=args.d_padding,
+                                d_sdropout=args.d_sdropout,
+                                d_dense_activation=args.d_dense_activation,
+                                d_dropout=args.d_dropout,
+                                d_batch_normalization=args.d_batch_normalization,
+                                d_lrate=args.d_lrate,
+                                d_loss=tf.keras.losses.BinaryCrossentropy(),
+                                d_metrics=[tf.keras.losses.BinaryCrossentropy()],
+                                g_n_conv_per_step=args.g_n_conv_per_step,
+                                g_conv_activation=args.g_conv_activation,
+                                g_kernel_size=args.g_kernel_size,
+                                g_padding=args.g_padding,
+                                g_sdropout=args.g_sdropout,
+                                g_batch_normalization=args.g_batch_normalization,
+                                m_lrate=args.m_lrate,
+                                m_loss=tf.keras.losses.BinaryCrossentropy(),
+                                m_metrics=[tf.keras.losses.BinaryCrossentropy()])
 
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:
-        print(model.summary())
+        print(d.summary())
+        print('\n\n\n')
+        print(g.summary())
+        print('\n\n\n')
+        print(meta.summary())
+        print('\n\n\n')
 
     print(args)
 
@@ -213,8 +248,9 @@ def execute_exp(args=None, multi_gpus=False):
 
     # Plot the model
     if args.render:
-        render_fname = '%s_model_plot.png' % fbase
-        plot_model(model, to_file=render_fname, show_shapes=True, show_layer_names=True)
+        plot_model(d, to_file=f'{fbase}_discriminator_plot.png', show_shapes=True, show_layer_names=True)
+        plot_model(g, to_file=f'{fbase}_generator_plot.png', show_shapes=True, show_layer_names=True)
+        plot_model(meta, to_file=f'{fbase}_meta_plot.png', show_shapes=True, show_layer_names=True)
 
     # Perform the experiment?
     if args.nogo:
@@ -235,10 +271,6 @@ def execute_exp(args=None, multi_gpus=False):
 
     # Log hostname
     wandb.log({'hostname': socket.gethostname()})
-
-    # Log model design image
-    if args.render:
-        wandb.log({'model architecture': wandb.Image(render_fname)})
 
     # Callbacks
     cbs = []

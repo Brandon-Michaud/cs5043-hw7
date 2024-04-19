@@ -83,8 +83,10 @@ def create_parser():
                         help='Probability of spatial dropout in generator')
     parser.add_argument('--g_batch_normalization', action='store_true',
                         help='Turn on batch normalization for generator')
-    parser.add_argument('--g_lrate', type=float, default=0.001, help="Generator learning rate")
-    parser.add_argument('--g_grad_clip', type=float, default=None,
+
+    # Meta model configuration
+    parser.add_argument('--m_lrate', type=float, default=0.001, help="Generator learning rate")
+    parser.add_argument('--m_grad_clip', type=float, default=None,
                         help='Threshold for gradient clipping in generator')
 
     # Regularization parameters

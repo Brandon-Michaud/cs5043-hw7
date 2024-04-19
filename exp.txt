@@ -6,4 +6,4 @@
 --nepochs_g=1
 --save_model
 --nogo
---no_data
+--render

@@ -6,7 +6,6 @@ from network_support import *
 
 def create_discriminator(image_size,
                          n_channels,
-                         n_classes,
                          filters,
                          hidden,
                          n_conv_per_step=3,
@@ -16,17 +15,17 @@ def create_discriminator(image_size,
                          sdropout=None,
                          dense_activation='elu',
                          dropout=None,
-                         batch_normalization=False,
-                         # lrate=0.0001,
-                         # grad_clip=None,
-                         # loss=None,
-                         # metrics=None
-                         ):
-    input1 = Input(shape=(image_size[0], image_size[1], n_channels,))
-    input2 = Input(shape=(image_size[0], image_size[1], 1,))
+                         batch_normalization=False):
+    # Input for RGB image
+    input1 = Input(shape=(image_size[0], image_size[1], n_channels,), name='RGB Image')
 
+    # Input for semantic labels of pixels
+    input2 = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
+
+    # Concatenate inputs
     tensor = Concatenate()([input1, input2])
 
+    # Create down side of Unet
     tensor, _ = create_cnn_down_stack(tensor=tensor,
                                       n_conv_per_step=n_conv_per_step,
                                       filters=filters,
@@ -35,29 +34,29 @@ def create_discriminator(image_size,
                                       padding=padding,
                                       batch_normalization=batch_normalization,
                                       sdropout=sdropout)
+
+    # Global max pooling for each filter
     tensor = GlobalMaxPooling2D()(tensor)
+
+    # Create dense layers
     tensor = create_dense_stack(tensor=tensor,
                                 nhidden=hidden,
                                 activation=dense_activation,
                                 batch_normalization=batch_normalization,
                                 dropout=dropout)
-    tensor = Dense(n_classes, activation='sigmoid')(tensor)
+
+    # Single output for if the image is real or fake
+    tensor = Dense(1, activation='sigmoid')(tensor)
     output = tensor
 
     # Create model from data flow
-    model = Model(inputs=[input1, input2], outputs=output)
-
-    # The optimizer determines how the gradient descent is to be done
-    # opt = tf.keras.optimizers.Adam(learning_rate=lrate, amsgrad=False, clipnorm=grad_clip)
-    #
-    # model.compile(loss=loss, optimizer=opt, metrics=metrics)
+    model = Model(inputs=[input1, input2], outputs=output, name='Discriminator')
 
     return model
 
 
 def create_generator(image_size,
                      n_channels,
-                     n_classes,
                      n_noise_steps,
                      filters,
                      n_conv_per_step=3,
@@ -65,20 +64,15 @@ def create_generator(image_size,
                      kernel_size=3,
                      padding='valid',
                      sdropout=None,
-                     batch_normalization=False,
-                     # lrate=0.0001,
-                     # grad_clip=None,
-                     # loss=None,
-                     # metrics=None
-                     ):
-    # Input image with labels
-    tensor = Input(shape=(image_size[0], image_size[1], n_classes,))
+                     batch_normalization=False):
+    # Input image with semantic pixel labels
+    tensor = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
     inputs = [tensor]
 
-    # Input noises
+    # Input noises at each level in Unet
     noises = []
     for i in range(n_noise_steps - 1, -1, -1):
-        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,))
+        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise {i}')
         inputs.append(noise)
         noises.append(noise)
 
@@ -95,12 +89,13 @@ def create_generator(image_size,
     # Get rid of last skip connection (unneeded)
     skips.pop()
 
-    # Up convolutions in Unet
+    # Add noise in middle of bottom of Unet
     tensor = Concatenate()([tensor, noises.pop(0)])
-    r_filters = list(reversed(filters))
 
+    # Up convolutions in Unet
+    r_filters = list(reversed(filters))
     for i, f in enumerate(r_filters[:-1]):
-        # Last element in the previous conv stack, but we increase the number of filters
+        # Finish stack of convolution layers
         tensor = create_conv_stack(tensor=tensor,
                                    n_conv_per_step=n_conv_per_step - 1,
                                    filters=f,
@@ -110,13 +105,13 @@ def create_generator(image_size,
                                    batch_normalization=batch_normalization,
                                    sdropout=sdropout)
 
-        # Up Sampling + striding
+        # Up sampling
         tensor = UpSampling2D(size=2)(tensor)
 
         # Concatenate skip connection and noise
         tensor = Concatenate()([tensor, skips.pop(), noises.pop(0)])
 
-        # Next stack of Conv layers
+        # First element in next stack of convolution layers, but with more filters
         tensor = create_conv_stack(tensor=tensor,
                                    n_conv_per_step=1,
                                    filters=f,
@@ -144,63 +139,93 @@ def create_generator(image_size,
                     kernel_initializer='random_normal',
                     bias_initializer='zeros',
                     activation='sigmoid')(tensor)
-
     output = tensor
 
     # Create model from data flow
-    model = Model(inputs=inputs, outputs=output)
-
-    # The optimizer determines how the gradient descent is to be done
-    # opt = tf.keras.optimizers.Adam(learning_rate=lrate, amsgrad=False, clipnorm=grad_clip)
-    #
-    # model.compile(loss=loss, optimizer=opt, metrics=metrics)
+    model = Model(inputs=inputs, outputs=output, name='Generator')
 
     return model
 
 
-def create_gan():
-    model = create_discriminator(image_size=[],
-                                 n_channels=0,
-                                 n_classes=0,
-                                 filters=[],
-                                 hidden=[],
-                                 n_conv_per_step=0,
-                                 conv_activation='elu',
-                                 kernel_size=3,
-                                 padding='elu',
-                                 sdropout=None,
-                                 dense_activation='elu',
-                                 dropout=None,
-                                 batch_normalization=False,
-                                 lrate=0.0001,
-                                 grad_clip=None,
-                                 loss=None,
-                                 metrics=None)
-    model = create_discriminator(image_size=(args.image_size, args.image_size),
-                                 n_channels=3,
-                                 n_classes=num_classes,
-                                 filters=args.d_filters,
-                                 hidden=args.d_hidden,
-                                 n_conv_per_step=args.d_n_conv_per_step,
-                                 conv_activation=args.d_conv_activation,
-                                 kernel_size=args.d_kernel_size,
-                                 padding=args.d_padding,
-                                 sdropout=args.d_sdropout,
-                                 dense_activation=args.d_dense_activation,
-                                 dropout=args.d_dropout,
-                                 batch_normalization=args.d_batch_normalization,
-                                 lrate=args.d_lrate,
-                                 grad_clip=args.d_grad_clip,
-                                 loss=tf.keras.losses.BinaryCrossentropy,
-                                 metrics=[tf.keras.metrics.BinaryAccuracy])
-    model = create_generator(image_size=(args.image_size, args.image_size),
-                             n_channels=3,
-                             n_classes=num_classes,
-                             n_noise_steps=args.g_n_noise_steps,
-                             filters=args.g_filters,
-                             n_conv_per_step=args.g_n_conv_per_step,
-                             conv_activation=args.g_conv_activation,
-                             kernel_size=args.g_kernel_size,
-                             padding=args.g_padding,
-                             sdropout=args.g_sdropout,
-                             batch_normalization=args.g_batch_normalization)
+def create_gan(image_size,
+               n_channels,
+               d_filters,
+               d_hidden,
+               g_n_noise_steps,
+               g_filters,
+               d_n_conv_per_step=3,
+               d_conv_activation='elu',
+               d_kernel_size=3,
+               d_padding='valid',
+               d_sdropout=None,
+               d_dense_activation='elu',
+               d_dropout=None,
+               d_batch_normalization=False,
+               d_lrate=0.0001,
+               d_loss=None,
+               d_metrics=None,
+               g_n_conv_per_step=3,
+               g_conv_activation='elu',
+               g_kernel_size=3,
+               g_padding='valid',
+               g_sdropout=None,
+               g_batch_normalization=False,
+               m_lrate=0.0001,
+               m_loss=None,
+               m_metrics=None):
+    # Create discriminator based on inputs
+    d = create_discriminator(image_size=image_size,
+                             n_channels=n_channels,
+                             filters=d_filters,
+                             hidden=d_hidden,
+                             n_conv_per_step=d_n_conv_per_step,
+                             conv_activation=d_conv_activation,
+                             kernel_size=d_kernel_size,
+                             padding=d_padding,
+                             sdropout=d_sdropout,
+                             dense_activation=d_dense_activation,
+                             dropout=d_dropout,
+                             batch_normalization=d_batch_normalization)
+
+    # Compile discriminator
+    d_opt = tf.keras.optimizers.Adam(learning_rate=d_lrate, amsgrad=False)
+    d.compile(loss=d_loss, optimizer=d_opt, metrics=d_metrics)
+
+    # Create generator based on inputs
+    g = create_generator(image_size=image_size,
+                         n_channels=n_channels,
+                         n_noise_steps=g_n_noise_steps,
+                         filters=g_filters,
+                         n_conv_per_step=g_n_conv_per_step,
+                         conv_activation=g_conv_activation,
+                         kernel_size=g_kernel_size,
+                         padding=g_padding,
+                         sdropout=g_sdropout,
+                         batch_normalization=g_batch_normalization)
+
+    # Make discriminator untrainable in meta model
+    d.trainable = False
+
+    # Create inputs for the meta model
+    labels = Input(shape=(image_size[0], image_size[1], 1,), name='Pixel Labels')
+    inputs = [labels]
+
+    # Input noises at each level in Unet
+    for i in range(g_n_noise_steps - 1, -1, -1):
+        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise {i}')
+        inputs.append(noise)
+
+    # Create fake image using generator with labels and noise
+    fake_image = g(inputs)
+
+    # Pass fake image and labels to discriminator to see if it is fooled
+    p_fake = d([fake_image, labels])
+
+    # Create the meta model
+    model = Model(inputs=inputs, outputs=p_fake, name='Meta Model')
+
+    # Compile meta model
+    m_opt = tf.keras.optimizers.Adam(learning_rate=m_lrate, amsgrad=False)
+    model.compile(loss=m_loss, optimizer=m_opt, metrics=m_metrics)
+
+    return d, g, model
