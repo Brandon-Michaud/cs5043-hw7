@@ -2,7 +2,7 @@
 #
 #SBATCH --partition=debug_5min,debug
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
+#SBATCH --mem=1G
 #SBATCH --output=outputs/hw7_%j_stdout.txt
 #SBATCH --error=outputs/hw7_%j_stderr.txt
 #SBATCH --time=00:05:00
