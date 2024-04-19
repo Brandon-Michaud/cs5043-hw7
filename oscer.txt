@@ -1,4 +1,3 @@
---gpu
 --batch=64
 --repeat
 --prefetch=2

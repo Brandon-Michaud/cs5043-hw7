@@ -1,0 +1,14 @@
+--d_n_conv_per_step=2
+--d_filters
+8
+16
+32
+--d_conv_activation=elu
+--d_kernel_size=3
+--d_padding=valid
+--d_hidden
+256
+128
+64
+--d_dense_activation=elu
+--d_lrate=0.0001
