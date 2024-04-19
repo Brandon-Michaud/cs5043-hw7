@@ -227,7 +227,7 @@ def create_gan(image_size,
     p_fake = d([fake_image, labels])
 
     # Create the meta model
-    model = Model(inputs=inputs, outputs=p_fake, name='Meta Model')
+    model = Model(inputs=inputs, outputs=p_fake, name='Meta_Model')
 
     # Compile meta model
     m_opt = tf.keras.optimizers.Adam(learning_rate=m_lrate, amsgrad=False)
