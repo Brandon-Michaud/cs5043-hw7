@@ -174,43 +174,31 @@ def execute_exp(args=None, multi_gpus=False):
 
         with mirrored_strategy.scope():
             # Build network: you must provide your own implementation
-            model = create_discriminator(image_size=(args.image_size, args.image_size),
-                                         n_channels=3,
-                                         n_classes=num_classes,
-                                         filters=args.d_filters,
-                                         hidden=args.d_hidden,
-                                         n_conv_per_step=args.d_n_conv_per_step,
-                                         conv_activation=args.d_conv_activation,
-                                         kernel_size=args.d_kernel_size,
-                                         padding=args.d_padding,
-                                         sdropout=args.d_sdropout,
-                                         dense_activation=args.d_dense_activation,
-                                         dropout=args.d_dropout,
-                                         batch_normalization=args.d_batch_normalization,
-                                         lrate=args.d_lrate,
-                                         grad_clip=args.d_grad_clip,
-                                         loss=tf.keras.losses.BinaryCrossentropy,
-                                         metrics=[tf.keras.metrics.BinaryAccuracy])
+            model = create_generator(image_size=(args.image_size, args.image_size),
+                                     n_channels=3,
+                                     n_classes=num_classes,
+                                     n_noise_steps=args.g_n_noise_steps,
+                                     filters=args.g_filters,
+                                     n_conv_per_step=args.g_n_conv_per_step,
+                                     conv_activation=args.g_conv_activation,
+                                     kernel_size=args.g_kernel_size,
+                                     padding=args.g_padding,
+                                     sdropout=args.g_sdropout,
+                                     batch_normalization=args.g_batch_normalization)
     else:
         # Single GPU
         # Build network: you must provide your own implementation
-        model = create_discriminator(image_size=(args.image_size, args.image_size),
-                                     n_channels=3,
-                                     n_classes=num_classes,
-                                     filters=args.d_filters,
-                                     hidden=args.d_hidden,
-                                     n_conv_per_step=args.d_n_conv_per_step,
-                                     conv_activation=args.d_conv_activation,
-                                     kernel_size=args.d_kernel_size,
-                                     padding=args.d_padding,
-                                     sdropout=args.d_sdropout,
-                                     dense_activation=args.d_dense_activation,
-                                     dropout=args.d_dropout,
-                                     batch_normalization=args.d_batch_normalization,
-                                     lrate=args.d_lrate,
-                                     grad_clip=args.d_grad_clip,
-                                     loss=tf.keras.losses.BinaryCrossentropy,
-                                     metrics=[tf.keras.metrics.BinaryAccuracy])
+        model = create_generator(image_size=(args.image_size, args.image_size),
+                                 n_channels=3,
+                                 n_classes=num_classes,
+                                 n_noise_steps=args.g_n_noise_steps,
+                                 filters=args.g_filters,
+                                 n_conv_per_step=args.g_n_conv_per_step,
+                                 conv_activation=args.g_conv_activation,
+                                 kernel_size=args.g_kernel_size,
+                                 padding=args.g_padding,
+                                 sdropout=args.g_sdropout,
+                                 batch_normalization=args.g_batch_normalization)
 
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:

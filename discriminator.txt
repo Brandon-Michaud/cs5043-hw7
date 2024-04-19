@@ -1,11 +1,11 @@
---d_n_conv_per_step=2
+--d_n_conv_per_step=3
 --d_filters
 8
 16
 32
 --d_conv_activation=elu
 --d_kernel_size=3
---d_padding=valid
+--d_padding=same
 --d_hidden
 256
 128

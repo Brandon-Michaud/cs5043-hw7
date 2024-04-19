@@ -66,7 +66,26 @@ def create_parser():
     parser.add_argument('--d_batch_normalization', action='store_true',
                         help='Turn on batch normalization for discriminator')
     parser.add_argument('--d_lrate', type=float, default=0.001, help="Discriminator learning rate")
-    parser.add_argument('--d_grad_clip', type=float, default=None, help='Threshold for gradient clipping in discriminator')
+    parser.add_argument('--d_grad_clip', type=float, default=None,
+                        help='Threshold for gradient clipping in discriminator')
+
+    # Generator configuration
+    parser.add_argument('--g_n_conv_per_step', type=int, default=2,
+                        help='Number of convolutions per each convolution stack in generator')
+    parser.add_argument('--g_n_noise_steps', type=int, default=3, help='Number of noise steps in generator')
+    parser.add_argument('--g_filters', nargs='+', type=int, default=[64],
+                        help='Number of filters for each convolution stack in generator')
+    parser.add_argument('--g_conv_activation', type=str, default='elu',
+                        help='Convolutional activation for generator')
+    parser.add_argument('--g_kernel_size', type=int, default=3, help='Size of kernel for generator')
+    parser.add_argument('--g_padding', type=str, default='valid', help='Type of padding to use for generator')
+    parser.add_argument('--g_sdropout', type=float, default=None,
+                        help='Probability of spatial dropout in generator')
+    parser.add_argument('--g_batch_normalization', action='store_true',
+                        help='Turn on batch normalization for generator')
+    parser.add_argument('--g_lrate', type=float, default=0.001, help="Generator learning rate")
+    parser.add_argument('--g_grad_clip', type=float, default=None,
+                        help='Threshold for gradient clipping in generator')
 
     # Regularization parameters
     parser.add_argument('--L1_regularization', '--l1', type=float, default=None, help="L1 regularization parameter")

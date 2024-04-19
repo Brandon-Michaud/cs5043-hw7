@@ -19,7 +19,6 @@ from tensorflow.keras.utils import plot_model
 
 
 def create_conv_stack(tensor: tf.Tensor,
-                      step: int,
                       n_conv_per_step: int,
                       filters: int,
                       kernel_size: int = 3,
@@ -86,8 +85,7 @@ def create_conv_stack(tensor: tf.Tensor,
                                bias_initializer='zeros',
                                activation=activation if (
                                            j < n_conv_per_step - 1 or not 'activation_last' in kwargs.keys()) else
-                               kwargs['activation_last'],
-                               name='C%d_%d' % (step, j))(tensor)
+                               kwargs['activation_last'])(tensor)
 
         # Optional dropout
         if 'sdropout' in kwargs.keys() and kwargs['sdropout'] is not None:
@@ -125,13 +123,13 @@ def create_cnn_down_stack(tensor: tf.Tensor,
     tensor_list = []
 
     # First conv stack
-    tensor = create_conv_stack(tensor, 0, n_conv_per_step - 1, filters[0], **kwargs)
+    tensor = create_conv_stack(tensor, n_conv_per_step - 1, filters[0], **kwargs)
 
     print("DOWN STACK: %d" % filters[0])
     for i, f in enumerate(filters[1:]):
         print("DOWN STACK: %d" % f)
         # Last element in the previous conv stack, but we increase the number of filters
-        tensor = create_conv_stack(tensor, i + 1001, 1, f,
+        tensor = create_conv_stack(tensor, 1, f,
                                    activation=activation, **kwargs)
 
         # Add this tensor to the skip connection list
@@ -141,7 +139,7 @@ def create_cnn_down_stack(tensor: tf.Tensor,
         tensor = MaxPooling2D(pool_size=2, strides=2)(tensor)
 
         # Next stack of Conv layers
-        tensor = create_conv_stack(tensor, i + 1, n_conv_per_step - 1, f,
+        tensor = create_conv_stack(tensor, n_conv_per_step - 1, f,
                                    activation=activation, **kwargs)
 
     # Add last tensor to the list
