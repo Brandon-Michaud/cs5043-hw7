@@ -18,10 +18,10 @@ def create_discriminator(image_size,
                          dropout=None,
                          batch_normalization=False):
     # Input for RGB image
-    input1 = Input(shape=(image_size[0], image_size[1], n_channels,), name='RGB Image')
+    input1 = Input(shape=(image_size[0], image_size[1], n_channels,), name='RGB_Image')
 
     # Input for semantic labels of pixels
-    input2 = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
+    input2 = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel_Labels')
 
     # Concatenate inputs
     tensor = Concatenate()([input1, input2])
@@ -68,13 +68,13 @@ def create_generator(image_size,
                      sdropout=None,
                      batch_normalization=False):
     # Input image with semantic pixel labels
-    tensor = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
+    tensor = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel_Labels')
     inputs = [tensor]
 
     # Input noises at each level in Unet
     noises = []
     for i in range(n_noise_steps - 1, -1, -1):
-        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise {i}')
+        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise_{i}')
         inputs.append(noise)
         noises.append(noise)
 
@@ -212,12 +212,12 @@ def create_gan(image_size,
     d.trainable = False
 
     # Create inputs for the meta model
-    labels = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel Labels')
+    labels = Input(shape=(image_size[0], image_size[1], n_classes,), name='Pixel_Labels')
     inputs = [labels]
 
     # Input noises at each level in Unet
     for i in range(g_n_noise_steps - 1, -1, -1):
-        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise {i}')
+        noise = Input(shape=(image_size[0] // (2 ** i), image_size[1] // (2 ** i), 1,), name=f'Noise_{i}')
         inputs.append(noise)
 
     # Create fake image using generator with labels and noise
