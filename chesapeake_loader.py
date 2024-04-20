@@ -74,6 +74,7 @@ def load_single_file(fname):
     # Translate from numpy to TF Tensors
     return tf.cast(ins, tf.float32), tf.cast(outs, tf.int8)#, tf.cast(mask, tf.float32), tf.cast(weights, tf.float32)
 
+@tf.autograph.experimental.do_not_convert
 def load_single_image_class_pair(fname:str, patch_size:int = 32) -> [tf.Tensor]:
     '''
     Load one patches file of the Chesapeake Watershed data set and return the imagery and pixel labels
