@@ -1,8 +1,11 @@
 --project=hw7
+--exp_type=GAN
+--label=test
 --dataset=/home/fagg/datasets/radiant_earth/pa
+--fold=0
 --image_size=64
---nepochs_meta=15
+--nepochs_meta=50
 --nepochs_d=10
---nepochs_g=1
+--nepochs_g=4
 --save_model
 --render
