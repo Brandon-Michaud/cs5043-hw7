@@ -4,7 +4,7 @@
 --dataset=/home/fagg/datasets/radiant_earth/pa
 --fold=0
 --image_size=64
---nepochs_meta=300
+--nepochs_meta=2500
 --nepochs_d=10
 --nepochs_g=5
 --save_model
