@@ -11,4 +11,4 @@
 128
 64
 --d_dense_activation=elu
---d_lrate=0.001
+--d_lrate=0.0001
