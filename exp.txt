@@ -1,6 +1,4 @@
 --project=hw7
---exp_type=GAN
---label=test
 --dataset=/home/fagg/datasets/radiant_earth/pa
 --fold=0
 --image_size=64

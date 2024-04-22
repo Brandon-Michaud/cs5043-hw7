@@ -1,0 +1,11 @@
+--g_n_conv_per_step=3
+--g_n_noise_steps=5
+--g_filters
+8
+16
+32
+64
+128
+--g_conv_activation=elu
+--g_kernel_size=3
+--g_padding=same
