@@ -81,6 +81,17 @@ def create_discriminator_histograms(args):
     pred_fake_alt = np.array(pred_fake_alt)
     pred_fake2_alt = np.array(pred_fake2_alt)
 
+    outputs = [pred_real_base, pred_fake_base, pred_fake2_base, pred_real_alt, pred_fake_alt, pred_fake2_alt]
+    labels = ['Real Base', 'Fake Base', 'Fake2 Base', 'Real Alt', 'Fake Alt', 'Fake2 Alt']
+
+    for label, output in zip(labels, outputs):
+        fig = plt.figure()
+        plt.hist(output, bins=20)
+        plt.title(label)
+        plt.xlabel('Discriminator Prediction')
+        plt.ylabel('Frequency')
+        fig.savefig(f'figures/{label.lower().replace(" ", "_")}')
+
     print(f'shape of pred_real: {pred_real_base.shape}')
     print(f'shape of pred_fake: {pred_fake_base.shape}')
     print(f'shape of pred_fake2: {pred_fake2_base.shape}')
