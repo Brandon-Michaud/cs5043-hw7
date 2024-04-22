@@ -67,4 +67,4 @@ if __name__ == '__main__':
     # Parse and check incoming arguments
     parser = create_parser()
     args = parser.parse_args()
-    create_discriminator_histograms()
+    create_discriminator_histograms(args)
