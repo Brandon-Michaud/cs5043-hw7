@@ -12,7 +12,6 @@ def create_discriminator_histograms(args):
                                         full_sat=False,
                                         patch_size=args.image_size,
                                         fold=args.fold,
-                                        cache_dir=args.cache,
                                         repeat_train=args.repeat,
                                         shuffle_train=args.shuffle,
                                         batch_size=args.batch,
