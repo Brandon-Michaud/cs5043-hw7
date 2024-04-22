@@ -246,7 +246,7 @@ def execute_exp(args=None, multi_gpus=False):
                                                verbose=args.verbose >= 2)
 
     fig = render_examples(L_fake, I_fake, I_fake_no_use)
-    fig.savefig('figures/examples.png')
+    fig.savefig(f'{fbase}_examples.png')
 
     # Done training
 
