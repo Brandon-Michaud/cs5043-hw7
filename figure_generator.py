@@ -13,7 +13,7 @@ def create_discriminator_histograms(args):
                                         patch_size=args.image_size,
                                         fold=args.fold,
                                         cache_dir=args.cache,
-                                        repeat_train=args.repeat,
+                                        repeat_train=False,
                                         shuffle_train=args.shuffle,
                                         batch_size=args.batch,
                                         prefetch=args.prefetch,
