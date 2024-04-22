@@ -15,7 +15,7 @@ def create_discriminator_histograms(args):
                                         cache_dir=args.cache,
                                         repeat_train=False,
                                         shuffle_train=args.shuffle,
-                                        batch_size=1,
+                                        batch_size=2048,
                                         prefetch=args.prefetch,
                                         num_parallel_calls=args.num_parallel_calls)
 
@@ -31,7 +31,7 @@ def create_discriminator_histograms(args):
     pred_real_alt = []
     pred_fake_alt = []
     pred_fake2_alt = []
-    for I, L in ds_train.batch(3):
+    for I, L in ds_train.batch(3).take(1):
         # Real image/label pairs
         I_real = np.squeeze(I[0, :, :, :, :])
         L_real = np.squeeze(L[0, :, :, :, :])
