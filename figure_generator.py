@@ -15,7 +15,7 @@ def create_discriminator_histograms(args):
                                         cache_dir=args.cache,
                                         repeat_train=False,
                                         shuffle_train=args.shuffle,
-                                        batch_size=args.batch,
+                                        batch_size=1,
                                         prefetch=args.prefetch,
                                         num_parallel_calls=args.num_parallel_calls)
 
