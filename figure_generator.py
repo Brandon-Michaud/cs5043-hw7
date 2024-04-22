@@ -29,7 +29,10 @@ def create_discriminator_histograms(args):
     g_models = [g_base, g_alt]
     labels = ['base', 'alt']
     for label, d_model, g_model in zip(labels, d_models, g_models):
-        for I, L in ds_train.batch(3).take(1):
+        pred_real = []
+        pred_fake = []
+        pred_fake2 = []
+        for I, L in ds_train.batch(3):
             # Real image/label pairs
             I_real = np.squeeze(I[0, :, :, :, :])
             L_real = np.squeeze(L[0, :, :, :, :])
@@ -57,12 +60,16 @@ def create_discriminator_histograms(args):
             # Generate images given the generator inputs
             I_fake = g_model.predict(x=inputs)
 
-            pred_real = d_model.predict(x=[I_real, L_real])
-            pred_fake = d_model.predict(x=[I_fake, L_fake])
-            pred_fake2 = d_model.predict(x=[I_fake2, L_fake2])
-            print(f'shape of pred_real: {pred_real.shape}')
-            print(f'shape of pred_fake: {pred_fake.shape}')
-            print(f'shape of pred_fake2: {pred_fake2.shape}')
+            pred_real.extend(d_model.predict(x=[I_real, L_real]))
+            pred_fake.extend(d_model.predict(x=[I_fake, L_fake]))
+            pred_fake2.extend(d_model.predict(x=[I_fake2, L_fake2]))
+            
+        pred_real = np.array(pred_real)
+        pred_fake = np.array(pred_fake)
+        pred_fake2 = np.array(pred_fake2)
+        print(f'shape of pred_real: {pred_real.shape}')
+        print(f'shape of pred_fake: {pred_fake.shape}')
+        print(f'shape of pred_fake2: {pred_fake2.shape}')
 
 
 if __name__ == '__main__':
