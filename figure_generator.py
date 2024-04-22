@@ -60,6 +60,9 @@ def create_discriminator_histograms(args):
             pred_real = d_model.predict(x=[I_real, L_real])
             pred_fake = d_model.predict(x=[I_fake, L_fake])
             pred_fake2 = d_model.predict(x=[I_fake2, L_fake2])
+            print(f'shape of pred_real: {pred_real.shape}')
+            print(f'shape of pred_fake: {pred_fake.shape}')
+            print(f'shape of pred_fake2: {pred_fake2.shape}')
 
 
 if __name__ == '__main__':
