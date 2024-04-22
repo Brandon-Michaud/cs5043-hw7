@@ -213,23 +213,6 @@ def execute_exp(args=None, multi_gpus=False):
         print("File %s already exists" % fname_out)
         return
 
-    #####
-    # Start wandb
-    # run = wandb.init(project=args.project, name='%s_R%d' % (args.label, args.rotation), notes=fbase, config=vars(args))
-    #
-    # # Log hostname
-    # wandb.log({'hostname': socket.gethostname()})
-    #
-    # # Callbacks
-    # cbs = []
-    # early_stopping_cb = keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=True,
-    #                                                   min_delta=args.min_delta, monitor=args.monitor)
-    # cbs.append(early_stopping_cb)
-    #
-    # # Weights and Biases
-    # wandb_metrics_cb = wandb.keras.WandbMetricsLogger()
-    # cbs.append(wandb_metrics_cb)
-
     if args.verbose >= 3:
         print('Fitting model')
 
@@ -245,35 +228,25 @@ def execute_exp(args=None, multi_gpus=False):
                                                nepochs_g=args.nepochs_g,
                                                verbose=args.verbose >= 2)
 
-    fig = render_examples(L_fake, I_fake, I_fake_no_use)
+    fig = render_examples(L_fake, I_fake, I_fake_no_use, 25)
     fig.savefig(f'{fbase}_examples.png')
 
-    # Done training
+    # Generate results data
+    results = {
+        'L_fake': L_fake,
+        'I_fake': I_fake,
+        'I_fake_no_use': I_fake_no_use
+    }
 
-    # # Generate results data
-    # results = {}
-    #
-    # # Test set
-    # if ds_test is not None:
-    #     print('#################')
-    #     print('Testing')
-    #     results['predict_testing_eval'] = model.evaluate(ds_test)
-    #     wandb.log({'final_test_loss': results['predict_testing_eval'][0]})
-    #     wandb.log({'final_test_sparse_categorical_accuracy': results['predict_testing_eval'][1]})
-    #
-    # # Save results
-    # fbase = generate_fname(args, args_str)
-    # results['fname_base'] = fbase
-    # with open("%s_results.pkl" % (fbase), "wb") as fp:
-    #     pickle.dump(results, fp)
+    # Save results
+    with open("%s_results.pkl" % (fbase), "wb") as fp:
+        pickle.dump(results, fp)
 
     # Save model
     if args.save_model:
         d.save("%s_discriminator" % (fbase))
         g.save("%s_generator" % (fbase))
         meta.save("%s_meta" % (fbase))
-
-    # wandb.finish()
 
 
 if __name__ == "__main__":
